@@ -19,14 +19,18 @@ class Products {
     async create(req, res) {
         try {
             const {name, description, category, price, discount, rating} = req.body;
+            const imageUrl = req.body.image; // ixtiyoriy: to'g'ridan-to'g'ri rasm URL manzili
 
-            // Rasm multer orqali fayl sifatida keladi (req.file)
-            if(!name || !description || !category || !price || !req.file) {
-                return res.status(400).json({message: "Iltimos barcha malumotlarni to'ldiring (rasm ham majburiy)"})
+            // Rasm YO fayl sifatida (req.file) YO URL sifatida (body.image) kelishi mumkin
+            if(!name || !description || !category || !price || (!req.file && !imageUrl)) {
+                return res.status(400).json({message: "Iltimos barcha malumotlarni to'ldiring (rasm: fayl yoki URL)"})
             }
 
-            // Rasmni kichraytirib, so'ng base64 (data:image/...) ko'rinishida DB'ga saqlaymiz
-            const image = await resizeImage(req.file.buffer);
+            // Agar URL berilgan bo'lsa — shuni qisqa qator sifatida saqlaymiz.
+            // Aks holda yuklangan faylni kichraytirib base64 qilamiz.
+            const image = imageUrl
+                ? imageUrl
+                : await resizeImage(req.file.buffer);
 
             const newProduct = new Product({
                 name,
