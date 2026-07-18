@@ -1,4 +1,17 @@
 const Product = require("../models/product.model");
+const Jimp = require("jimp");
+
+// Rasmni serverda kichraytiruvchi yordamchi funksiya.
+// Eng katta tomonini 600px'ga cheklaydi va JPEG sifatini 70% ga tushiradi.
+// Natijada rasm "hamma joyni egallab ketmaydi" va DB'da kam joy oladi.
+async function resizeImage(buffer) {
+    const image = await Jimp.read(buffer);
+    // scaleToFit — nisbatni saqlagan holda 600x600 ichiga sig'diradi (kattalashtirmaydi)
+    image.scaleToFit(600, 600);
+    image.quality(70);
+    const outBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+    return `data:image/jpeg;base64,${outBuffer.toString("base64")}`;
+}
 
 
 class Products {
@@ -11,8 +24,8 @@ class Products {
                 return res.status(400).json({message: "Iltimos barcha malumotlarni to'ldiring (rasm ham majburiy)"})
             }
 
-            // Rasmni base64 (data:image/...) matniga aylantirib DB'ga saqlaymiz
-            const image = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+            // Rasmni kichraytirib, so'ng base64 (data:image/...) ko'rinishida DB'ga saqlaymiz
+            const image = await resizeImage(req.file.buffer);
 
             const newProduct = new Product({
                 name,
