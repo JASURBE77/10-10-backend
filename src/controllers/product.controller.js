@@ -6,9 +6,10 @@ const Jimp = require("jimp");
 // Natijada rasm "hamma joyni egallab ketmaydi" va DB'da kam joy oladi.
 async function resizeImage(buffer) {
     const image = await Jimp.read(buffer);
-    // scaleToFit — nisbatni saqlagan holda 600x600 ichiga sig'diradi (kattalashtirmaydi)
-    image.scaleToFit(600, 600);
-    image.quality(70);
+    // scaleToFit — nisbatni saqlagan holda 300x300 ichiga sig'diradi (kattalashtirmaydi)
+    // Kichik o'lcham + kuchli siqish => base64 hajmi kichik, rasm joyni egallamaydi
+    image.scaleToFit(300, 300);
+    image.quality(60);
     const outBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
     return `data:image/jpeg;base64,${outBuffer.toString("base64")}`;
 }
